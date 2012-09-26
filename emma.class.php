@@ -33,7 +33,7 @@ class Emma {
 	 */
 	private $emma_password = '';
 
-  /**
+	/**
 	 * Emma Account ID
 	 * @var string
 	 */
@@ -78,30 +78,30 @@ class Emma {
 	 **/
 	function __construct($account_id){
 
-    if( empty($account_id) )
-      return false;
+		if( empty($account_id) )
+			return false;
 
-    // Save account ID to class object variable
-    $this->emma_account_id = $account_id;
+		// Save account ID to class object variable
+		$this->emma_account_id = $account_id;
 
-    // Use the username and password that is associated with your selected account
-    // If you'd like, you can include these from a separate file. You may have multiple
-    // acccounts which can be selected by sending in the account_id when the class
-    // object is created.
-    switch($account_id){
-      case '1234567':
-        $this->emma_username = 'asdfasdfasdfasdfasdf';
-        $this->emma_password = 'fdsafdsafdsafdsafdsa';
-        break;
-      case '7654321':
-        $this->emma_username = 'asdfasdfasdfasdfasdf';
-        $this->emma_password = 'fdsafdsafdsafdsafdsa';
-        break;
-      default:
-        $this->emma_username = 'asdfasdfasdfasdfasdf';
-        $this->emma_password = 'fdsafdsafdsafdsafdsa';
-        break;
-    }
+		// Use the username and password that is associated with your selected account
+		// If you'd like, you can include these from a separate file. You may have multiple
+		// acccounts which can be selected by sending in the account_id when the class
+		// object is created.
+		switch($account_id){
+			case '1234567':
+				$this->emma_username = 'asdfasdfasdfasdfasdf';
+				$this->emma_password = 'fdsafdsafdsafdsafdsa';
+				break;
+			case '7654321':
+				$this->emma_username = 'asdfasdfasdfasdfasdf';
+				$this->emma_password = 'fdsafdsafdsafdsafdsa';
+				break;
+			default:
+				$this->emma_username = 'asdfasdfasdfasdfasdf';
+				$this->emma_password = 'fdsafdsafdsafdsafdsa';
+				break;
+		}
 
 	}
 
@@ -113,79 +113,79 @@ class Emma {
 	 **/
 	function make_request($api_method, $http_method = NULL, $data = NULL){
 
-    $get_query_string = '';
-    if( $this->count ){
-      $get_query_string = '?count=true';
-    }elseif( $this->start >= 0 && $this->end >= 0 ){
-      $get_query_string = sprintf('?start=%d&end=%d', $this->start, $this->end);
-    }
+		// Set query string
+		if( $this->count ){
+			$get_query_string = '?count=true';
+		}elseif( $this->start >= 0 && $this->end >= 0 ){
+			$get_query_string = sprintf('?start=%d&end=%d', $this->start, $this->end);
+		}
+		if( ($http_method == 'GET' || $http_method == 'DELETE') && !empty($data) ){
+			$get_query_string = '?';
+			$get_query_string .= http_build_query($data);
+		}
 
-    if( ($http_method == 'GET' || $http_method == 'DELETE') && !empty($data) ){
-      $get_query_string = '?'.http_build_query($data);
-    }
+		// Set request
+		$request_url = 'https://'.$this->emma_api_domain.'/'.$this->emma_account_id.'/'.$api_method.$get_query_string;
 
-    // Set request
-    $request_url = 'https://'.$this->emma_api_domain.'/'.$this->emma_account_id.'/'.$api_method.$get_query_string;
+		// Debugging output
+		if($this->debug){
+			echo 'HTTP Method: '.$http_method."\n";
+			echo 'Request URL: '.$request_url."\n";
+		}
 
-    // Debugging output
-    if($this->debug){
-      echo 'HTTP Method: '.$http_method."\n";
-      echo 'Request URL: '.$request_url."\n";
-    }
+		// Create a cURL handle
+		$ch = curl_init();
 
-    // Create a cURL handle
-    $ch = curl_init();
+		// Set the request
+		curl_setopt($ch, CURLOPT_URL, $request_url);
 
-    // Set the request
-    curl_setopt($ch, CURLOPT_URL, $request_url);
+		// Use HTTP Basic Authentication
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ;
 
-    // Use HTTP Basic Authentication
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ;
+		// Set the username and password
+		curl_setopt($ch, CURLOPT_USERPWD, $this->emma_username.':'.$this->emma_password);
 
-    // Set the username and password
-    curl_setopt($ch, CURLOPT_USERPWD, $this->emma_username.':'.$this->emma_password);
-
-    // Save the response to a string
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		// Save the response to a string
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 
 		// Send data as PUT request
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $http_method);
 
-    // Send data
-    if( !empty($data) ){
-      $postdata = json_encode($data);
-      curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Length: ' . strlen($postdata)));
-		  curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+		// Send data
+		if( !empty($data) ){
+			$postdata = json_encode($data);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Length: ' . strlen($postdata)));
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
 
-      // Debugging output
-      if($this->debug)
-        echo 'JSON Post Data: '.$postdata."\n";
+			// Debugging output
+			if($this->debug)
+				echo 'JSON Post Data: '.$postdata."\n";
 		}
 
-    // Execute cURL request
-    $curl_response = curl_exec($ch);
+		// Execute cURL request
+		$curl_response = curl_exec($ch);
 
-    // Debugging
-    if($this->debug){
-      //$status = curl_getinfo($ch);
-      //var_dump($status);
-      //var_dump($curl_response);
-    }
+		// Debugging
+		if($this->debug){
+			//$status = curl_getinfo($ch);
+			//var_dump($status);
+			//var_dump($curl_response);
+		}
 
-    // Close cURL handle
-    curl_close($ch);
+		// Close cURL handle
+		curl_close($ch);
 
-    // Save response to class variable for use in debugging
-    $this->last_emma_response = $curl_response;
+		// Save response to class variable for use in debugging
+		$this->last_emma_response = $curl_response;
 
-    // Parse response
-    if( $this->count )
-      $parsed_result = $curl_response;
-    else
-      $parsed_result = $this->parse_response($curl_response);
+		// Parse response
+		if( $this->count )
+			$parsed_result = $curl_response;
+		else
+			$parsed_result = $this->parse_response($curl_response);
 
-    // Return parsed response
-    return $parsed_result;
+		// Return parsed response
+		return $parsed_result;
 	}
 
 	/**
@@ -195,8 +195,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function parse_response($response){
-    $data = json_decode($response);
-    return $data;
+		$data = json_decode($response);
+		return $data;
 	}
 
 	/* *** BEGIN `FIELDS` METHODS *** */
@@ -209,11 +209,11 @@ class Emma {
 	 **/
 	function get_field_list($deleted = ''){
 
-	  if($deleted)
-	    $send_data['deleted'] = 1;
+		if($deleted)
+			$send_data['deleted'] = 1;
 
-    $data = $this->make_request('fields','GET',$send_data);
-    return $data;
+		$data = $this->make_request('fields','GET',$send_data);
+		return $data;
 	}
 
 	/**
@@ -224,8 +224,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function get_field($field_id, $deleted = ''){
-    $data = $this->make_request('fields/'.$field_id, 'GET',$send_data);
-    return $data;
+		$data = $this->make_request('fields/'.$field_id, 'GET',$send_data);
+		return $data;
 	}
 
 	/**
@@ -240,17 +240,17 @@ class Emma {
 	 **/
 	function create_field($shortcut_name, $display_name, $field_type, $column_order){
 
-    // Combine input data to an array
-	  $send_data['shortcut_name'] = $shortcut_name;
-	  $send_data['display_name'] = $display_name;
-	  $send_data['field_type'] = $field_type;
-	  $send_data['column_order'] = $column_order;
+		// Combine input data to an array
+		$send_data['shortcut_name'] = $shortcut_name;
+		$send_data['display_name'] = $display_name;
+		$send_data['field_type'] = $field_type;
+		$send_data['column_order'] = $column_order;
 
-    // Make API request
-    $data = $this->make_request('fields', 'POST', $send_data);
+		// Make API request
+		$data = $this->make_request('fields', 'POST', $send_data);
 
-    // Return API request results
-    return $data;
+		// Return API request results
+		return $data;
 	}
 
 	/**
@@ -261,11 +261,11 @@ class Emma {
 	 **/
 	function delete_field($field_id){
 
-    // Make API request
-    $data = $this->make_request('fields/'.$field_id, 'DELETE');
+		// Make API request
+		$data = $this->make_request('fields/'.$field_id, 'DELETE');
 
-    // Return API request results
-    return $data;
+		// Return API request results
+		return $data;
 	}
 
 	/**
@@ -276,11 +276,11 @@ class Emma {
 	 **/
 	function clear_member_field_data($field_id){
 
-    // Make API request
-    $data = $this->make_request('fields/'.$field_id.'/clear', 'POST');
+		// Make API request
+		$data = $this->make_request('fields/'.$field_id.'/clear', 'POST');
 
-    // Return API request results
-    return $data;
+		// Return API request results
+		return $data;
 	}
 
 	/**
@@ -291,11 +291,11 @@ class Emma {
 	 **/
 	function update_field($field_id, $send_data){
 
-    // Make API request
-    $data = $this->make_request('fields/'.$field_id, 'PUT', $send_data);
+		// Make API request
+		$data = $this->make_request('fields/'.$field_id, 'PUT', $send_data);
 
-    // Return API request results
-    return $data;
+		// Return API request results
+		return $data;
 	}
 
 	/* *** END `FIELDS` METHODS *** */
@@ -311,9 +311,9 @@ class Emma {
 	 *
 	 **/
 	function list_groups($group_types = 'g'){
-	  $send_data['group_types'] = $group_types;
-    $data = $this->make_request('groups','GET', $send_data);
-    return $data;
+		$send_data['group_types'] = $group_types;
+		$data = $this->make_request('groups','GET', $send_data);
+		return $data;
 	}
 
 	/**
@@ -324,10 +324,10 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function create_groups($groups){
-    $send_data = $groups;
-    $data = $this->make_request('groups','POST',$send_data);
-    return $data;
+	function create_groups($groups){
+		$send_data = $groups;
+		$data = $this->make_request('groups','POST',$send_data);
+		return $data;
 	}
 
 	/**
@@ -337,9 +337,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_group_detail($group_id){
-    $data = $this->make_request('groups/'.$group_id, 'GET');
-    return $data;
+	function get_group_detail($group_id){
+		$data = $this->make_request('groups/'.$group_id, 'GET');
+		return $data;
 	}
 
 	/**
@@ -349,10 +349,10 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function update_group($group_id, $group_name){
-	  $send_data['group_name'] = $group_name;
-    $data = $this->make_request('groups/'.$group_id, 'PUT', $send_data);
-    return $data;
+	function update_group($group_id, $group_name){
+		$send_data['group_name'] = $group_name;
+		$data = $this->make_request('groups/'.$group_id, 'PUT', $send_data);
+		return $data;
 	}
 
 	/**
@@ -362,9 +362,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function delete_group($group_id){
-    $data = $this->make_request('groups/'.$group_id, 'DELETE');
-    return $data;
+	function delete_group($group_id){
+		$data = $this->make_request('groups/'.$group_id, 'DELETE');
+		return $data;
 	}
 
 	/**
@@ -374,11 +374,11 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function list_group_members($group_id, $show_deleted = NULL){
-    if($show_deleted)
-      $send_data['deleted'] = 1;
-    $data = $this->make_request('groups/'.$group_id.'/members', 'GET', $send_data['deleted']);
-    return $data;
+	function list_group_members($group_id, $show_deleted = NULL){
+		if($show_deleted)
+			$send_data['deleted'] = 1;
+		$data = $this->make_request('groups/'.$group_id.'/members', 'GET', $send_data['deleted']);
+		return $data;
 	}
 
 	/**
@@ -389,10 +389,10 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function add_members_to_group($group_id, $member_ids){
-    $send_data['member_ids'] = $member_ids;
-    $data = $this->make_request('groups/'.$group_id.'/members', 'PUT', $send_data);
-    return $data;
+	function add_members_to_group($group_id, $member_ids){
+		$send_data['member_ids'] = $member_ids;
+		$data = $this->make_request('groups/'.$group_id.'/members', 'PUT', $send_data);
+		return $data;
 	}
 
 	/**
@@ -403,53 +403,53 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function remove_members_from_group($group_id, $member_ids){
-    $send_data['member_ids'] = $member_ids;
-    $data = $this->make_request('groups/'.$group_id.'/members/remove', 'PUT', $send_data);
-    return $data;
+	function remove_members_from_group($group_id, $member_ids){
+		$send_data['member_ids'] = $member_ids;
+		$data = $this->make_request('groups/'.$group_id.'/members/remove', 'PUT', $send_data);
+		return $data;
 	}
 
 	/**
 	 * Remove ALL members from a single active member group.
 	 *
 	 * @param integer $group_id required, identifier that you would like to use to reference the group
-	 * @param string $member_status_id  Optional. This is ‘a’ctive, ‘o’ptout, or ‘e’error.
+	 * @param string $member_status_id	Optional. This is ‘a’ctive, ‘o’ptout, or ‘e’error.
 	 * @return string|array API request results
 	 *
 	 **/
-  function remove_all_members_from_group($group_id, $member_status_id = NULL){
-    $send_data['member_status_id'] = $member_status_id;
-    $data = $this->make_request('groups/'.$group_id.'/members', 'DELETE', $send_data);
-    return $data;
+	function remove_all_members_from_group($group_id, $member_status_id = NULL){
+		$send_data['member_status_id'] = $member_status_id;
+		$data = $this->make_request('groups/'.$group_id.'/members', 'DELETE', $send_data);
+		return $data;
 	}
 
 	/**
 	 * Remove all members from all active member groups as a background job. The member_status_id parameter must be set.
 	 *
 	 * @param integer $group_id required, identifier that you would like to use to reference the group
-	 * @param string $member_status_id  Required. This is ‘a’ctive, ‘o’ptout, or ‘e’error.
+	 * @param string $member_status_id	Required. This is ‘a’ctive, ‘o’ptout, or ‘e’error.
 	 * @return string|array API request results
 	 *
 	 **/
-  function remove_all_members_from_all_groups($group_id, $member_status_id = 'a'){
-    $send_data['member_status_id'] = $member_status_id;
-    $data = $this->make_request('groups/'.$group_id.'/members/remove', 'DELETE', $send_data);
-    return $data;
+	function remove_all_members_from_all_groups($group_id, $member_status_id = 'a'){
+		$send_data['member_status_id'] = $member_status_id;
+		$data = $this->make_request('groups/'.$group_id.'/members/remove', 'DELETE', $send_data);
+		return $data;
 	}
 
 	/**
 	 * Copy all the users of one group into another group.
 	 *
 	 * @param integer $from_group_id A unique Group ID
- 	 * @param integer $to_group_id A unique Group ID
-	 * @param string $member_status_id  Required. This is ‘a’ctive, ‘o’ptout, or ‘e’error.
+	 * @param integer $to_group_id A unique Group ID
+	 * @param string $member_status_id	Required. This is ‘a’ctive, ‘o’ptout, or ‘e’error.
 	 * @return string|array API request results
 	 *
 	 **/
-  function copy_group_to_group($from_group_id, $to_group_id, $member_status_id = 'a'){
-    $send_data['member_status_id'] = $member_status_id;
-    $data = $this->make_request('groups/'.$from_group_id.'/'.$to_group_id.'/members/copy', 'PUT', $send_data);
-    return $data;
+	function copy_group_to_group($from_group_id, $to_group_id, $member_status_id = 'a'){
+		$send_data['member_status_id'] = $member_status_id;
+		$data = $this->make_request('groups/'.$from_group_id.'/'.$to_group_id.'/members/copy', 'PUT', $send_data);
+		return $data;
 	}
 
 	/* *** END `GROUPS` METHODS *** */
@@ -459,7 +459,7 @@ class Emma {
 	/**
 	 * Get information about current mailings.
 	 *
-	 * @param  boolean $include_archived Accepts “true”. All other values are False. Optional flag
+	 * @param	 boolean $include_archived Accepts “true”. All other values are False. Optional flag
 	 * to include archived mailings in the list.
 	 * @param string $mailing_types Accepts a comma-separated string with one or more of the following
 	 * mailing types: ‘m’ (regular), ‘t’ (test), ‘r’ (trigger). Defaults to ‘m,t’, standard and test
@@ -471,15 +471,15 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_mailing_list($include_archived = false, $mailing_types = NULL, $mailing_statuses = NULL, $is_scheduled = false){
-    $send_data['include_archived'] = $include_archived;
-    if( !empty($mailing_types) )
-      $send_data['mailing_types'] = $mailing_types;
-    if( !empty($mailing_statuses) )
-      $send_data['mailing_statuses'] = $mailing_statuses;
-    $send_data['is_scheduled'] = $is_scheduled;
-    $data = $this->make_request('mailings', 'GET', $send_data);
-    return $data;
+	function get_mailing_list($include_archived = false, $mailing_types = NULL, $mailing_statuses = NULL, $is_scheduled = false){
+		$send_data['include_archived'] = $include_archived;
+		if( !empty($mailing_types) )
+			$send_data['mailing_types'] = $mailing_types;
+		if( !empty($mailing_statuses) )
+			$send_data['mailing_statuses'] = $mailing_statuses;
+		$send_data['is_scheduled'] = $is_scheduled;
+		$data = $this->make_request('mailings', 'GET', $send_data);
+		return $data;
 	}
 
 	/**
@@ -489,9 +489,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_mailing_detail($mailing_id){
-    $data = $this->make_request('mailings/'.$mailing_id, 'GET');
-    return $data;
+	function get_mailing_detail($mailing_id){
+		$data = $this->make_request('mailings/'.$mailing_id, 'GET');
+		return $data;
 	}
 
 	/**
@@ -501,9 +501,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_mailing_members($mailing_id){
-    $data = $this->make_request('mailings/'.$mailing_id.'/members', 'GET');
-    return $data;
+	function get_mailing_members($mailing_id){
+		$data = $this->make_request('mailings/'.$mailing_id.'/members', 'GET');
+		return $data;
 	}
 
 	/**
@@ -515,9 +515,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_mailing_message($mailing_id, $member_id, $type = 'all'){
-    $data = $this->make_request('mailings/'.$mailing_id.'/messages/'.$member_id, 'GET');
-    return $data;
+	function get_mailing_message($mailing_id, $member_id, $type = 'all'){
+		$data = $this->make_request('mailings/'.$mailing_id.'/messages/'.$member_id, 'GET');
+		return $data;
 	}
 
 	/**
@@ -527,9 +527,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_mailing_groups($mailing_id){
-    $data = $this->make_request('mailings/'.$mailing_id.'/groups'.$member_id, 'GET');
-    return $data;
+	function get_mailing_groups($mailing_id){
+		$data = $this->make_request('mailings/'.$mailing_id.'/groups'.$member_id, 'GET');
+		return $data;
 	}
 
 	/**
@@ -542,10 +542,10 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function update_mailing_status($mailing_id, $status){
-    $send_data['status'] = $status;
-    $data = $this->make_request('mailings/'.$mailing_id, 'PUT', $send_data);
-    return $data;
+	function update_mailing_status($mailing_id, $status){
+		$send_data['status'] = $status;
+		$data = $this->make_request('mailings/'.$mailing_id, 'PUT', $send_data);
+		return $data;
 	}
 
 	/**
@@ -555,9 +555,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function archive_mailing($mailing_id){
-    $data = $this->make_request('mailings/'.$mailing_id, 'DELETE');
-    return $data;
+	function archive_mailing($mailing_id){
+		$data = $this->make_request('mailings/'.$mailing_id, 'DELETE');
+		return $data;
 	}
 
 	/**
@@ -567,9 +567,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function cancel_mailing($mailing_id){
-    $data = $this->make_request('mailings/cancel/'.$mailing_id, 'DELETE');
-    return $data;
+	function cancel_mailing($mailing_id){
+		$data = $this->make_request('mailings/cancel/'.$mailing_id, 'DELETE');
+		return $data;
 	}
 
 	/**
@@ -583,11 +583,11 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function forward_message($mailing_id, $member_id, $recipient_emails, $note){
-    $send_data['recipient_emails'] = $recipient_emails;
-    $send_data['note'] = $note;
-    $data = $this->make_request('forwards/'.$mailing_id.'/'.$member_id, 'POST', $send_data);
-    return $data;
+	function forward_message($mailing_id, $member_id, $recipient_emails, $note){
+		$send_data['recipient_emails'] = $recipient_emails;
+		$send_data['note'] = $note;
+		$data = $this->make_request('forwards/'.$mailing_id.'/'.$member_id, 'POST', $send_data);
+		return $data;
 	}
 
 	/**
@@ -602,20 +602,20 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function append_to_mailing($mailing_id, $sender = NULL, $heads_up_emails = NULL,
-                             $recipient_emails = NULL, $recipient_groups = NULL, $recipient_searches = NULL){
-    if(!empty($sender))
-      $send_data['sender'] = $sender;
-    if(!empty($heads_up_emails))
-      $send_data['heads_up_emails'] = $heads_up_emails;
-    if(!empty($recipient_emails))
-      $send_data['recipient_emails'] = $recipient_emails;
-    if(!empty($recipient_groups))
-      $send_data['recipient_groups'] = $recipient_groups;
-    if(!empty($recipient_searches))
-      $send_data['recipient_searches'] = $recipient_searches;
-    $data = $this->make_request('mailings/'.$mailing_id, 'POST', $send_data);
-    return $data;
+	function append_to_mailing($mailing_id, $sender = NULL, $heads_up_emails = NULL,
+														 $recipient_emails = NULL, $recipient_groups = NULL, $recipient_searches = NULL){
+		if(!empty($sender))
+			$send_data['sender'] = $sender;
+		if(!empty($heads_up_emails))
+			$send_data['heads_up_emails'] = $heads_up_emails;
+		if(!empty($recipient_emails))
+			$send_data['recipient_emails'] = $recipient_emails;
+		if(!empty($recipient_groups))
+			$send_data['recipient_groups'] = $recipient_groups;
+		if(!empty($recipient_searches))
+			$send_data['recipient_searches'] = $recipient_searches;
+		$data = $this->make_request('mailings/'.$mailing_id, 'POST', $send_data);
+		return $data;
 	}
 
 	/**
@@ -625,14 +625,14 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_heads_up_emails($mailing_id){
-    $data = $this->make_request('mailings/'.$mailing_id.'/headsup', 'GET');
-    return $data;
+	function get_heads_up_emails($mailing_id){
+		$data = $this->make_request('mailings/'.$mailing_id.'/headsup', 'GET');
+		return $data;
 	}
 
 	/* *** END `MAILINGS` METHODS *** */
 
-  /* *** BEGIN `MEMBERS` METHODS *** */
+	/* *** BEGIN `MEMBERS` METHODS *** */
 
 	/**
 	 * List Members
@@ -641,14 +641,14 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function list_members($show_deleted = NULL, $count = false){
-    if($show_deleted)
-      $send_data['deleted'] = 1;
-	  if( $count)
-	    $this->count = true;
-	  else
-	    $this->count = false;
-    $data = $this->make_request('members','GET', $send_data);
-    return $data;
+		if($show_deleted)
+			$send_data['deleted'] = 1;
+		if( $count)
+			$this->count = true;
+		else
+			$this->count = false;
+		$data = $this->make_request('members','GET', $send_data);
+		return $data;
 	}
 
 	/**
@@ -658,8 +658,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function get_member_detail($member_id){
-    $data = $this->make_request('members/'.$member_id,'GET');
-    return $data;
+		$data = $this->make_request('members/'.$member_id,'GET');
+		return $data;
 	}
 
 	/**
@@ -669,8 +669,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function get_member_detail_by_email($email){
-    $data = $this->make_request('members/email/'.$email,'GET');
-    return $data;
+		$data = $this->make_request('members/email/'.$email,'GET');
+		return $data;
 	}
 
 	/**
@@ -680,8 +680,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function get_member_optout_detail($member_id){
-    $data = $this->make_request('members/'.$member_id.'/optout','GET');
-    return $data;
+		$data = $this->make_request('members/'.$member_id.'/optout','GET');
+		return $data;
 	}
 
 	/**
@@ -689,24 +689,24 @@ class Emma {
 	 *
 	 * @param array $members An array of members to update
 	 * @param string $source_filename An arbitrary string to associate with this import.
-   * @param boolean $add_only Optional. Only add new members, ignore existing members.
-   * @param array $group_ids Optional. Add imported members to this list of groups
+	 * @param boolean $add_only Optional. Only add new members, ignore existing members.
+	 * @param array $group_ids Optional. Add imported members to this list of groups
 	 * @return string|array API request results
 	 **/
 	function import_member_list($members, $source_filename, $add_only = NULL, $group_ids = NULL ){
 
-	  $send_data['members'] = $members;
-	  $send_data['source_filename'] = $source_filename;
+		$send_data['members'] = $members;
+		$send_data['source_filename'] = $source_filename;
 
-	  if(!empty($add_only))
-	    $send_data['add_only'] = $add_only;
+		if(!empty($add_only))
+			$send_data['add_only'] = $add_only;
 
-	  if(!empty($group_ids))
-	    $send_data['group_ids'] = $group_ids;
+		if(!empty($group_ids))
+			$send_data['group_ids'] = $group_ids;
 
-    $data = $this->make_request('members', 'POST', $send_data);
+		$data = $this->make_request('members', 'POST', $send_data);
 
-    return $data;
+		return $data;
 	}
 
 	/**
@@ -714,25 +714,25 @@ class Emma {
 	 *
 	 * @param string $email Email address of member to add or update
 	 * @param array $fields Names and values of user-defined fields to update
-   * @param array $group_ids Optional. Add imported members to this list of groups
-   * @param integer $signup_form_id Optional. Indicate that this member used a particular signup form.
-   * This is important if you have custom confirmation messages for a particular signup form and so that
-   * signup-based triggers will be fired.
+	 * @param array $group_ids Optional. Add imported members to this list of groups
+	 * @param integer $signup_form_id Optional. Indicate that this member used a particular signup form.
+	 * This is important if you have custom confirmation messages for a particular signup form and so that
+	 * signup-based triggers will be fired.
 	 * @return string|array API request results
 	 **/
 	function import_single_member($email, $fields, $group_ids = NULL, $signup_form_id = NULL ){
 
-	  $send_data['email'] = $email;
-	  $send_data['fields'] = $fields;
+		$send_data['email'] = $email;
+		$send_data['fields'] = $fields;
 
-	  if(!empty($group_ids))
-	    $send_data['group_ids'] = $group_ids;
-	  if(!empty($signup_form_id))
-	    $send_data['group_ids'] = '';
+		if(!empty($group_ids))
+			$send_data['group_ids'] = $group_ids;
+		if(!empty($signup_form_id))
+			$send_data['group_ids'] = '';
 
-    $data = $this->make_request('members/add','POST',$send_data);
+		$data = $this->make_request('members/add','POST',$send_data);
 
-    return $data;
+		return $data;
 	}
 
 	/**
@@ -742,9 +742,9 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function delete_members($member_ids){
-	  $send_data['member_ids'] = $member_ids;
-    $data = $this->make_request('members/delete','PUT',$send_data);
-    return $data;
+		$send_data['member_ids'] = $member_ids;
+		$data = $this->make_request('members/delete','PUT',$send_data);
+		return $data;
 	}
 
 	/**
@@ -756,10 +756,10 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function update_members_status($member_ids, $status_to){
-	  $send_data['member_ids'] = $member_ids;
-	  $send_data['status_to'] = $status_to;
-    $data = $this->make_request('members/status','PUT',$send_data);
-    return $data;
+		$send_data['member_ids'] = $member_ids;
+		$send_data['status_to'] = $status_to;
+		$data = $this->make_request('members/status','PUT',$send_data);
+		return $data;
 	}
 
 	/**
@@ -769,15 +769,15 @@ class Emma {
 	 * @param string $email Email address of member to add or update
 	 * @param string $status_to The new status for the given members
 	 * Accepts one of ‘a’, ‘e’, ‘o’ (active, error, optout).
- 	 * @param array $fields Names and values of user-defined fields to update
+	 * @param array $fields Names and values of user-defined fields to update
 	 * @return string|array API request results
 	 **/
 	function update_member($member_id, $email, $status_to, $fields){
-	  $send_data['email'] = $email;
-	  $send_data['status_to'] = $status_to;
-	  $send_data['fields'] = $fields;
-    $data = $this->make_request('members/'.$member_id,'PUT',$send_data);
-    return $data;
+		$send_data['email'] = $email;
+		$send_data['status_to'] = $status_to;
+		$send_data['fields'] = $fields;
+		$data = $this->make_request('members/'.$member_id,'PUT',$send_data);
+		return $data;
 	}
 
 	/**
@@ -787,8 +787,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function delete_member($member_id){
-    $data = $this->make_request('members/'.$member_id,'DELETE');
-    return $data;
+		$data = $this->make_request('members/'.$member_id,'DELETE');
+		return $data;
 	}
 
 	/**
@@ -798,8 +798,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function list_member_groups($member_id){
-    $data = $this->make_request('members/'.$member_id.'/groups','GET');
-    return $data;
+		$data = $this->make_request('members/'.$member_id.'/groups','GET');
+		return $data;
 	}
 
 	/**
@@ -810,9 +810,9 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function add_member_to_groups($member_id, $group_ids){
-	  $send_data['group_ids'] = $group_ids;
-    $data = $this->make_request('members/'.$member_id.'/groups','PUT', $send_data);
-    return $data;
+		$send_data['group_ids'] = $group_ids;
+		$data = $this->make_request('members/'.$member_id.'/groups','PUT', $send_data);
+		return $data;
 	}
 
 	/**
@@ -823,9 +823,9 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function remove_member_from_groups($member_id, $group_ids){
-	  $send_data['group_ids'] = $group_ids;
-    $data = $this->make_request('members/'.$member_id.'/remove','PUT', $send_data);
-    return $data;
+		$send_data['group_ids'] = $group_ids;
+		$data = $this->make_request('members/'.$member_id.'/remove','PUT', $send_data);
+		return $data;
 	}
 
 	/**
@@ -835,9 +835,9 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function remove_all_members($member_status_id){
-	  $send_data['member_status_id'] = $member_status_id;
-    $data = $this->make_request('members','DELETE',$send_data);
-    return $data;
+		$send_data['member_status_id'] = $member_status_id;
+		$data = $this->make_request('members','DELETE',$send_data);
+		return $data;
 	}
 
 	/**
@@ -847,8 +847,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function remove_member_from_all_groups($member_id){
-    $data = $this->make_request('members/'.$member_id.'/groups','DELETE');
-    return $data;
+		$data = $this->make_request('members/'.$member_id.'/groups','DELETE');
+		return $data;
 	}
 
 	/**
@@ -859,8 +859,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function remove_members_from_groups($member_ids, $group_ids){
-    $data = $this->make_request('members/groups/remove','PUT');
-    return $data;
+		$data = $this->make_request('members/groups/remove','PUT');
+		return $data;
 	}
 
 	/**
@@ -870,8 +870,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function get_member_mailing_history($member_id){
-    $data = $this->make_request('members/'.$member_id.'/mailings','GET');
-    return $data;
+		$data = $this->make_request('members/'.$member_id.'/mailings','GET');
+		return $data;
 	}
 
 	/**
@@ -881,8 +881,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function get_import_stats_members($import_id){
-    $data = $this->make_request('members/imports/'.$import_id.'/members','GET');
-    return $data;
+		$data = $this->make_request('members/imports/'.$import_id.'/members','GET');
+		return $data;
 	}
 
 	/**
@@ -892,8 +892,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function get_import_stats($import_id){
-    $data = $this->make_request('members/imports/'.$import_id,'GET');
-    return $data;
+		$data = $this->make_request('members/imports/'.$import_id,'GET');
+		return $data;
 	}
 
 	/**
@@ -903,8 +903,8 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function get_all_import_stats(){
-    $data = $this->make_request('members/imports','GET');
-    return $data;
+		$data = $this->make_request('members/imports','GET');
+		return $data;
 	}
 
 	/**
@@ -914,61 +914,61 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function mark_import_as_deleted(){
-    $data = $this->make_request('members/imports/delete','DELETE');
-    return $data;
+		$data = $this->make_request('members/imports/delete','DELETE');
+		return $data;
 	}
 
 	/**
 	 * Copy all account members of one or more statuses into a group.
 	 *
- 	 * @param integer $group_id A unique Group ID
+	 * @param integer $group_id A unique Group ID
 	 * @param array $member_status_id This is an array containing ‘a’ctive, ‘o’ptout, and/or ‘e’error.
 	 * @return string|array API request results
 	 *
 	 **/
-  function copy_to_group($group_id, $member_status_id){
-    $send_data['member_status_id'] = $member_status_id;
-    $data = $this->make_request('members/'.$group_id.'/copy', 'PUT', $send_data);
-    return $data;
+	function copy_to_group($group_id, $member_status_id){
+		$send_data['member_status_id'] = $member_status_id;
+		$data = $this->make_request('members/'.$group_id.'/copy', 'PUT', $send_data);
+		return $data;
 	}
 
 	/**
 	 * Update the status for a group of members, based on their current status
 	 *
-	 * @param string $status_from  This is ‘a’ctive, ‘o’ptout, and/or ‘e’error.
-	 * @param string $status_to  This is ‘a’ctive, ‘o’ptout, and/or ‘e’error.
- 	 * @param integer $group_id A unique Group ID
+	 * @param string $status_from	 This is ‘a’ctive, ‘o’ptout, and/or ‘e’error.
+	 * @param string $status_to	 This is ‘a’ctive, ‘o’ptout, and/or ‘e’error.
+	 * @param integer $group_id A unique Group ID
 	 * @return string|array API request results
 	 *
 	 **/
-  function bulk_change_member_status($status_from, $status_to, $group_id = NULL){
-    $send_data['group_id'] = $group_id;
-    $data = $this->make_request('members/status/'.$status_from.'/to/'.$status_to, 'PUT', $send_data);
-    return $data;
+	function bulk_change_member_status($status_from, $status_to, $group_id = NULL){
+		$send_data['group_id'] = $group_id;
+		$data = $this->make_request('members/status/'.$status_from.'/to/'.$status_to, 'PUT', $send_data);
+		return $data;
 	}
 
-  /* *** END `MEMBERS` METHODS *** */
+	/* *** END `MEMBERS` METHODS *** */
 
-  /* *** BEGIN `RESPONSE` METHODS *** */
+	/* *** BEGIN `RESPONSE` METHODS *** */
 
 	/**
 	 * Get the response summary for an account.
 	 * @param boolean $include_archived Accepts 1. All other values are False. Optional flag to
-   * include archived mailings in the list.
-   * @param string $range Accepts 2 dates (YYYY-MM-DD) delimited by a tilde (~).
-   * Example: 2011-04-01~2011-09-01 Optional argument to limit results to a date range. If one
-   * of the dates is omitted, the default will be either min date or now. If a single date is
-   * provided with no tilde, then only mailings sent on that date will be included.
+	 * include archived mailings in the list.
+	 * @param string $range Accepts 2 dates (YYYY-MM-DD) delimited by a tilde (~).
+	 * Example: 2011-04-01~2011-09-01 Optional argument to limit results to a date range. If one
+	 * of the dates is omitted, the default will be either min date or now. If a single date is
+	 * provided with no tilde, then only mailings sent on that date will be included.
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_response($include_archived = false, $range = NULL){
-    if(!empty($include_archived))
-      $send_data['include_archived'] = $include_archived;
-    if(!empty($range))
-      $send_data['range'] = $range;
-    $data = $this->make_request('response', 'GET', $send_data);
-    return $data;
+	function get_response($include_archived = false, $range = NULL){
+		if(!empty($include_archived))
+			$send_data['include_archived'] = $include_archived;
+		if(!empty($range))
+			$send_data['range'] = $range;
+		$data = $this->make_request('response', 'GET', $send_data);
+		return $data;
 	}
 
 	/**
@@ -978,9 +978,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_response_overview($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id, 'GET');
-    return $data;
+	function get_response_overview($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id, 'GET');
+		return $data;
 	}
 
 	/**
@@ -990,9 +990,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_sends($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/sends', 'GET');
-    return $data;
+	function get_sends($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/sends', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1002,9 +1002,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_in_progress($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/in_progress', 'GET');
-    return $data;
+	function get_in_progress($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/in_progress', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1014,9 +1014,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_deliveries($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/deliveries', 'GET');
-    return $data;
+	function get_deliveries($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/deliveries', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1026,9 +1026,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_opens($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/opens', 'GET');
-    return $data;
+	function get_opens($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/opens', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1038,27 +1038,27 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_links($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/links', 'GET');
-    return $data;
+	function get_links($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/links', 'GET');
+		return $data;
 	}
 
 	/**
 	 * Get the list of clicks for this mailing.
 	 *
 	 * @param integer $mailing_id A unique Mailing ID
-	 * @param integer $member_id  Limits results to a single member.
+	 * @param integer $member_id	Limits results to a single member.
 	 * @param integer $link_id Limits results to a single link
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_clicks($mailing_id, $member_id = NULL, $link_id = NULL){
-    if(!empty($member_id))
-      $send_data['member_id'] = $member_id;
-    if(!empty($link_id))
-      $send_data['link_id'] = $link_id;
-    $data = $this->make_request('response/'.$mailing_id.'/clicks', 'GET', $send_data);
-    return $data;
+	function get_clicks($mailing_id, $member_id = NULL, $link_id = NULL){
+		if(!empty($member_id))
+			$send_data['member_id'] = $member_id;
+		if(!empty($link_id))
+			$send_data['link_id'] = $link_id;
+		$data = $this->make_request('response/'.$mailing_id.'/clicks', 'GET', $send_data);
+		return $data;
 	}
 
 	/**
@@ -1068,9 +1068,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_forwards($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/forwards', 'GET');
-    return $data;
+	function get_forwards($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/forwards', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1080,9 +1080,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_optouts($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/optouts', 'GET');
-    return $data;
+	function get_optouts($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/optouts', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1092,9 +1092,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_signups($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/signups', 'GET');
-    return $data;
+	function get_signups($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/signups', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1104,9 +1104,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_shares($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/shares', 'GET');
-    return $data;
+	function get_shares($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/shares', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1116,9 +1116,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function save_customer_share($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/customer_share', 'POST');
-    return $data;
+	function save_customer_share($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/customer_share', 'POST');
+		return $data;
 	}
 
 	/**
@@ -1128,9 +1128,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_customer_shares($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/customer_shares', 'GET');
-    return $data;
+	function get_customer_shares($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/customer_shares', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1140,9 +1140,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_customer_share_clicks($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/customer_share_clicks', 'GET');
-    return $data;
+	function get_customer_share_clicks($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/customer_share_clicks', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1152,9 +1152,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_customer_share($share_id){
-    $data = $this->make_request('response/'.$mailing_id.'/customer_share', 'GET');
-    return $data;
+	function get_customer_share($share_id){
+		$data = $this->make_request('response/'.$mailing_id.'/customer_share', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1164,14 +1164,14 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_share_overview($mailing_id){
-    $data = $this->make_request('response/'.$mailing_id.'/shares/overview', 'GET');
-    return $data;
+	function get_share_overview($mailing_id){
+		$data = $this->make_request('response/'.$mailing_id.'/shares/overview', 'GET');
+		return $data;
 	}
 
-  /* *** END `RESPONSE` METHODS *** */
+	/* *** END `RESPONSE` METHODS *** */
 
-  /* *** BEGIN `SEARCHES` METHODS *** */
+	/* *** BEGIN `SEARCHES` METHODS *** */
 
 	/**
 	 * Retrieve a list of saved searches
@@ -1180,13 +1180,13 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function list_searches($deleted = NULL){
+	function list_searches($deleted = NULL){
 
-	  if($deleted)
-	    $send_data['deleted'] = 1;
+		if($deleted)
+			$send_data['deleted'] = 1;
 
-    $data = $this->make_request('searches', 'GET', $send_data);
-    return $data;
+		$data = $this->make_request('searches', 'GET', $send_data);
+		return $data;
 	}
 
 	/**
@@ -1196,9 +1196,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_search_detail($search_id){
-    $data = $this->make_request('searches/'.$search_id, 'GET');
-    return $data;
+	function get_search_detail($search_id){
+		$data = $this->make_request('searches/'.$search_id, 'GET');
+		return $data;
 	}
 
 	/**
@@ -1209,27 +1209,27 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function create_search($criteria, $name){
-    $send_data['criteria'] = $criteria;
-    $send_data['name'] = $name;
-    $data = $this->make_request('searches', 'POST', $send_data);
-    return $data;
+	function create_search($criteria, $name){
+		$send_data['criteria'] = $criteria;
+		$send_data['name'] = $name;
+		$data = $this->make_request('searches', 'POST', $send_data);
+		return $data;
 	}
 
 	/**
 	 * Get the details for a saved search
 	 *
 	 * @param string $search_id A unique Search ID
-   * @param array $criteria Search criteria
+	 * @param array $criteria Search criteria
 	 * @param string $name A name for the search
 	 * @return string|array API request results
 	 *
 	 **/
-  function update_search($search_id, $criteria, $name){
-    $send_data['criteria'] = $criteria;
-    $send_data['name'] = $name;
-    $data = $this->make_request('searches/'.$search_id, 'PUT', $send_data);
-    return $data;
+	function update_search($search_id, $criteria, $name){
+		$send_data['criteria'] = $criteria;
+		$send_data['name'] = $name;
+		$data = $this->make_request('searches/'.$search_id, 'PUT', $send_data);
+		return $data;
 	}
 
 	/**
@@ -1239,9 +1239,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function delete_search($search_id){
-    $data = $this->make_request('searches/'.$search_id, 'DELETE');
-    return $data;
+	function delete_search($search_id){
+		$data = $this->make_request('searches/'.$search_id, 'DELETE');
+		return $data;
 	}
 
 	/**
@@ -1251,14 +1251,14 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_search_members($search_id){
-    $data = $this->make_request('searches/'.$search_id.'/members', 'GET');
-    return $data;
+	function get_search_members($search_id){
+		$data = $this->make_request('searches/'.$search_id.'/members', 'GET');
+		return $data;
 	}
 
-  /* *** END `SEARCHES` METHODS *** */
+	/* *** END `SEARCHES` METHODS *** */
 
-  /* *** BEGIN `TRIGGERS` METHODS *** */
+	/* *** BEGIN `TRIGGERS` METHODS *** */
 
 	/**
 	 * Get a basic listing of all triggers in an account.
@@ -1266,9 +1266,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function list_triggers($deleted = NULL){
-    $data = $this->make_request('triggers', 'GET');
-    return $data;
+	function list_triggers($deleted = NULL){
+		$data = $this->make_request('triggers', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1288,27 +1288,27 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function create_trigger($name, $event_type, $parent_mailing_id, $groups = NULL, $links = NULL,
-                         $signups = NULL, $surveys = NULL, $field_id = NULL, $push_offset = NULL, $is_disabled = NULL){
-    $send_data['name'] = $name;
-    $send_data['event_type'] = $event_type;
-    $send_data['parent_mailing_id'] = $parent_mailing_id;
-    if(!empty($groups))
-      $send_data['groups'] = $groups;
-    if(!empty($links))
-      $send_data['links'] = $links;
-    if(!empty($signups))
-      $send_data['signups'] = $signups;
-    if(!empty($surveys))
-      $send_data['surveys'] = $surveys;
-    if(!empty($field_id))
-      $send_data['field_id'] = $field_id;
-    if(!empty($push_offset))
-      $send_data['push_offset'] = $push_offset;
-    if(!empty($is_disabled))
-      $send_data['is_disabled'] = $is_disabled;
-    $data = $this->make_request('triggers', 'POST', $send_data);
-    return $data;
+	function create_trigger($name, $event_type, $parent_mailing_id, $groups = NULL, $links = NULL,
+												 $signups = NULL, $surveys = NULL, $field_id = NULL, $push_offset = NULL, $is_disabled = NULL){
+		$send_data['name'] = $name;
+		$send_data['event_type'] = $event_type;
+		$send_data['parent_mailing_id'] = $parent_mailing_id;
+		if(!empty($groups))
+			$send_data['groups'] = $groups;
+		if(!empty($links))
+			$send_data['links'] = $links;
+		if(!empty($signups))
+			$send_data['signups'] = $signups;
+		if(!empty($surveys))
+			$send_data['surveys'] = $surveys;
+		if(!empty($field_id))
+			$send_data['field_id'] = $field_id;
+		if(!empty($push_offset))
+			$send_data['push_offset'] = $push_offset;
+		if(!empty($is_disabled))
+			$send_data['is_disabled'] = $is_disabled;
+		$data = $this->make_request('triggers', 'POST', $send_data);
+		return $data;
 	}
 
 	/**
@@ -1318,9 +1318,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_trigger($trigger_id){
-    $data = $this->make_request('triggers/'.$trigger_id, 'GET');
-    return $data;
+	function get_trigger($trigger_id){
+		$data = $this->make_request('triggers/'.$trigger_id, 'GET');
+		return $data;
 	}
 
 	/**
@@ -1330,9 +1330,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function update_trigger($trigger_id){
-    $data = $this->make_request('triggers/'.$trigger_id, 'PUT');
-    return $data;
+	function update_trigger($trigger_id){
+		$data = $this->make_request('triggers/'.$trigger_id, 'PUT');
+		return $data;
 	}
 
 	/**
@@ -1342,9 +1342,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function delete_trigger($trigger_id){
-    $data = $this->make_request('triggers/'.$trigger_id, 'DELETE');
-    return $data;
+	function delete_trigger($trigger_id){
+		$data = $this->make_request('triggers/'.$trigger_id, 'DELETE');
+		return $data;
 	}
 
 	/**
@@ -1354,14 +1354,14 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_trigger_mailings($trigger_id){
-    $data = $this->make_request('triggers/'.$trigger_id.'/mailings', 'GET');
-    return $data;
+	function get_trigger_mailings($trigger_id){
+		$data = $this->make_request('triggers/'.$trigger_id.'/mailings', 'GET');
+		return $data;
 	}
 
-  /* *** END `TRIGGERS` METHODS *** */
+	/* *** END `TRIGGERS` METHODS *** */
 
-  /* *** BEGIN `WEBHOOKS` METHODS *** */
+	/* *** BEGIN `WEBHOOKS` METHODS *** */
 
 	/**
 	 * Get a basic listing of all webhooks associated with an account.
@@ -1369,9 +1369,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function list_webhooks(){
-    $data = $this->make_request('webhooks', 'GET');
-    return $data;
+	function list_webhooks(){
+		$data = $this->make_request('webhooks', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1381,9 +1381,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function get_webhook($webhook_id){
-    $data = $this->make_request('webhooks/'.$webhook_id, 'GET');
-    return $data;
+	function get_webhook($webhook_id){
+		$data = $this->make_request('webhooks/'.$webhook_id, 'GET');
+		return $data;
 	}
 
 	/**
@@ -1392,9 +1392,9 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function list_webhook_event_types(){
-    $data = $this->make_request('webhooks/events', 'GET');
-    return $data;
+	function list_webhook_event_types(){
+		$data = $this->make_request('webhooks/events', 'GET');
+		return $data;
 	}
 
 	/**
@@ -1407,14 +1407,14 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function create_webhook($event, $url, $method = 'POST', $user=NULL){
-    $send_data['event'] = $event;
-    $send_data['url'] = $url;
-    $send_data['method'] = $method;
-    if(!empty($user))
-      $send_data['user'] = $user;
-    $data = $this->make_request('webhooks', 'POST', $send_data);
-    return $data;
+	function create_webhook($event, $url, $method = 'POST', $user=NULL){
+		$send_data['event'] = $event;
+		$send_data['url'] = $url;
+		$send_data['method'] = $method;
+		if(!empty($user))
+			$send_data['user'] = $user;
+		$data = $this->make_request('webhooks', 'POST', $send_data);
+		return $data;
 	}
 
 	/**
@@ -1428,14 +1428,14 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function update_webhook($webhook_id, $event, $url, $method, $user=NULL){
-    $send_data['event'] = $event;
-    $send_data['url'] = $url;
-    $send_data['method'] = $method;
-    if(!empty($user))
-      $send_data['user'] = $user;
-    $data = $this->make_request('webhooks/'.$webhook_id, 'PUT', $send_data);
-    return $data;
+	function update_webhook($webhook_id, $event, $url, $method, $user=NULL){
+		$send_data['event'] = $event;
+		$send_data['url'] = $url;
+		$send_data['method'] = $method;
+		if(!empty($user))
+			$send_data['user'] = $user;
+		$data = $this->make_request('webhooks/'.$webhook_id, 'PUT', $send_data);
+		return $data;
 	}
 
 	/**
@@ -1444,12 +1444,12 @@ class Emma {
 	 * @return string|array API request results
 	 *
 	 **/
-  function delete_webhook($webhook_id){
-    $data = $this->make_request('webhooks/'.$webhook_id, 'DELETE');
-    return $data;
+	function delete_webhook($webhook_id){
+		$data = $this->make_request('webhooks/'.$webhook_id, 'DELETE');
+		return $data;
 	}
 
-  /* *** END `WEBHOOKS` METHODS *** */
+	/* *** END `WEBHOOKS` METHODS *** */
 
 } // END class
 ?>
