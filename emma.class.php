@@ -728,7 +728,7 @@ class Emma {
 		if(!empty($group_ids))
 			$send_data['group_ids'] = $group_ids;
 		if(!empty($signup_form_id))
-			$send_data['group_ids'] = '';
+			$send_data['signup_form_id'] = '';
 
 		$data = $this->make_request('members/add','POST',$send_data);
 
