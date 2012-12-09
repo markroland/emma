@@ -114,6 +114,7 @@ class Emma {
 	function make_request($api_method, $http_method = NULL, $data = NULL){
 
 		// Set query string
+		$get_query_string = '';
 		if( $this->count ){
 			$get_query_string = '?count=true';
 		}elseif( $this->start >= 0 && $this->end >= 0 ){
@@ -150,6 +151,9 @@ class Emma {
 
 		// Send data as PUT request
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $http_method);
+
+		// This may be necessary, depending on your server's configuration
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 
 		// Send data
 		if( !empty($data) ){
@@ -211,6 +215,8 @@ class Emma {
 
 		if($deleted)
 			$send_data['deleted'] = 1;
+		else
+			$send_data['deleted'] = 0;
 
 		$data = $this->make_request('fields','GET',$send_data);
 		return $data;
@@ -375,8 +381,12 @@ class Emma {
 	 *
 	 **/
 	function list_group_members($group_id, $show_deleted = NULL){
+
 		if($show_deleted)
 			$send_data['deleted'] = 1;
+		else
+			$send_data['deleted'] = 0;
+
 		$data = $this->make_request('groups/'.$group_id.'/members', 'GET', $send_data['deleted']);
 		return $data;
 	}
@@ -604,6 +614,7 @@ class Emma {
 	 **/
 	function append_to_mailing($mailing_id, $sender = NULL, $heads_up_emails = NULL,
 														 $recipient_emails = NULL, $recipient_groups = NULL, $recipient_searches = NULL){
+		$send_data = array();
 		if(!empty($sender))
 			$send_data['sender'] = $sender;
 		if(!empty($heads_up_emails))
@@ -641,12 +652,17 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function list_members($show_deleted = NULL, $count = false){
+
 		if($show_deleted)
 			$send_data['deleted'] = 1;
+		else
+			$send_data['deleted'] = 0;
+
 		if( $count)
 			$this->count = true;
 		else
 			$this->count = false;
+
 		$data = $this->make_request('members','GET', $send_data);
 		return $data;
 	}
@@ -824,7 +840,7 @@ class Emma {
 	 **/
 	function remove_member_from_groups($member_id, $group_ids){
 		$send_data['group_ids'] = $group_ids;
-		$data = $this->make_request('members/'.$member_id.'/remove','PUT', $send_data);
+		$data = $this->make_request('members/'.$member_id.'/groups/remove','PUT', $send_data);
 		return $data;
 	}
 
@@ -963,10 +979,13 @@ class Emma {
 	 *
 	 **/
 	function get_response($include_archived = false, $range = NULL){
+
+		$send_data = array();
 		if(!empty($include_archived))
 			$send_data['include_archived'] = $include_archived;
 		if(!empty($range))
 			$send_data['range'] = $range;
+
 		$data = $this->make_request('response', 'GET', $send_data);
 		return $data;
 	}
@@ -1053,10 +1072,13 @@ class Emma {
 	 *
 	 **/
 	function get_clicks($mailing_id, $member_id = NULL, $link_id = NULL){
+
+		$send_data = array();
 		if(!empty($member_id))
 			$send_data['member_id'] = $member_id;
 		if(!empty($link_id))
 			$send_data['link_id'] = $link_id;
+
 		$data = $this->make_request('response/'.$mailing_id.'/clicks', 'GET', $send_data);
 		return $data;
 	}
@@ -1184,6 +1206,8 @@ class Emma {
 
 		if($deleted)
 			$send_data['deleted'] = 1;
+		else
+			$send_data['deleted'] = 0;
 
 		$data = $this->make_request('searches', 'GET', $send_data);
 		return $data;
