@@ -48,6 +48,20 @@ class Emma {
 	public $last_emma_response = '';
 
 	/**
+	 * Contains the headers from the last response from Emma.
+	 * @var string
+	 */
+	public $last_emma_response_headers = '';
+
+	/**
+	 * Contains the last response information from Emma. It contains an array
+	 * of Contains the last response from Emma. It contains various information
+	 * about the request and response, including the HTTP code.
+	 * @var array
+	 */
+	public $last_emma_response_info = array();
+
+	/**
 	 * Set starting record. Used for paginated results
 	 * @var integer
 	 */
@@ -161,7 +175,9 @@ class Emma {
 		}
 
 		// Execute cURL request
+		curl_setopt($ch, CURLOPT_HEADER, true);
 		$curl_response = curl_exec($ch);
+		$curl_info = curl_getinfo($ch);
 
 		// Debugging
 		if($this->debug){
@@ -173,14 +189,17 @@ class Emma {
 		// Close cURL handle
 		curl_close($ch);
 
-		// Save response to class variable for use in debugging
-		$this->last_emma_response = $curl_response;
-
 		// Parse response
+		list($curl_response_headers, $curl_response) = preg_split("/\R\R/", $curl_response, 2);
 		if( $this->count )
 			$parsed_result = $curl_response;
 		else
 			$parsed_result = $this->parse_response($curl_response);
+
+		// Save response to class variable for use in debugging
+		$this->last_emma_response = $curl_response;
+		$this->last_emma_response_headers = $curl_response_headers;
+		$this->last_emma_response_info = $curl_info;
 
 		// Return parsed response
 		return $parsed_result;
