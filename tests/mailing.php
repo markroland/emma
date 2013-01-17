@@ -4,7 +4,7 @@
 require('emma.class.php');
 
 // Create new Emma class object
-$E = new Emma('1234567');
+$E = new Emma('1234567', 'Drivorj7QueckLeuk', 'WoghtepheecijnibV');
 
 // Control Debugging output
 $E->debug = true;

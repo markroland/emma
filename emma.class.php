@@ -6,32 +6,34 @@
  * @package emma
  * @author Mark Roland <mark [at] mark roland dot com>
  * @copyright Mark Roland, 2012
- * @version 1.0
+ * @license http://www.opensource.org/licenses/mit-license.php The MIT License
+ * @version 1.0.1
  *
- * Documentation: http://myemma.com/api-docs
+ * Documentation: http://api.myemma.com/
  *
  * Created on 2/1/2012
+ * Modified on 1/16/2013
  *
  **/
 class Emma {
 
 	/**
-	 * Emma Account Username
+	 * Emma API Dommain
 	 * @var string
 	 */
 	private $emma_api_domain = 'api.e2ma.net';
 
 	/**
-	 * Emma Account Username
+	 * Emma Account Public Key
 	 * @var string
 	 */
-	private $emma_username = '';
+	private $emma_public_key = '';
 
 	/**
-	 * Emma Account Password
+	 * Emma Account Private Key
 	 * @var string
 	 */
-	private $emma_password = '';
+	private $emma_private_key = '';
 
 	/**
 	 * Emma Account ID
@@ -45,6 +47,20 @@ class Emma {
 	 * @var string
 	 */
 	public $last_emma_response = '';
+
+	/**
+	 * Contains the headers from the last response from Emma.
+	 * @var string
+	 */
+	public $last_emma_response_headers = '';
+
+	/**
+	 * Contains the last response information from Emma. It contains an array
+	 * of Contains the last response from Emma. It contains various information
+	 * about the request and response, including the HTTP code.
+	 * @var array
+	 */
+	public $last_emma_response_info = array();
 
 	/**
 	 * Set starting record. Used for paginated results
@@ -73,35 +89,28 @@ class Emma {
 	/**
 	 * Class constructor
 	 *
-	 * @param string $account_id The Emma Account ID on which to perform actions
+	 * @param string|array $account_id The Emma Account ID on which to perform actions, or an array of params
+	 * @param string $public_key The Emma public key for the account
+	 * @param string $private_key The Emma private key for the account
 	 * @return boolean false if $account_id is not provided
 	 **/
-	function __construct($account_id){
+	function __construct($account_id, $public_key=null, $private_key=null){
 
-		if( empty($account_id) )
-			return false;
+		if( is_array($account_id) ){
+			$params = $account_id;
+			$account_id = isset($params['account_id']) ? $params['account_id'] : null;
+			$public_key = isset($params['public_key']) ? $params['public_key'] : null;
+			$private_key = isset($params['private_key']) ? $params['private_key'] : null;
+		}
+
+		if( empty($account_id) || empty($public_key) || empty($private_key) ){
+			throw new Exception('Emma Error: no account id, public key, or private key sent to constructor.');
+		}
 
 		// Save account ID to class object variable
 		$this->emma_account_id = $account_id;
-
-		// Use the username and password that is associated with your selected account
-		// If you'd like, you can include these from a separate file. You may have multiple
-		// acccounts which can be selected by sending in the account_id when the class
-		// object is created.
-		switch($account_id){
-			case '1234567':
-				$this->emma_username = 'asdfasdfasdfasdfasdf';
-				$this->emma_password = 'fdsafdsafdsafdsafdsa';
-				break;
-			case '7654321':
-				$this->emma_username = 'asdfasdfasdfasdfasdf';
-				$this->emma_password = 'fdsafdsafdsafdsafdsa';
-				break;
-			default:
-				$this->emma_username = 'asdfasdfasdfasdfasdf';
-				$this->emma_password = 'fdsafdsafdsafdsafdsa';
-				break;
-		}
+		$this->emma_public_key = $public_key;
+		$this->emma_private_key = $private_key;
 
 	}
 
@@ -143,8 +152,8 @@ class Emma {
 		// Use HTTP Basic Authentication
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ;
 
-		// Set the username and password
-		curl_setopt($ch, CURLOPT_USERPWD, $this->emma_username.':'.$this->emma_password);
+		// Set the public_key and private_key
+		curl_setopt($ch, CURLOPT_USERPWD, $this->emma_public_key.':'.$this->emma_private_key);
 
 		// Save the response to a string
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -167,7 +176,9 @@ class Emma {
 		}
 
 		// Execute cURL request
+		curl_setopt($ch, CURLOPT_HEADER, true);
 		$curl_response = curl_exec($ch);
+		$curl_info = curl_getinfo($ch);
 
 		// Debugging
 		if($this->debug){
@@ -179,14 +190,17 @@ class Emma {
 		// Close cURL handle
 		curl_close($ch);
 
-		// Save response to class variable for use in debugging
-		$this->last_emma_response = $curl_response;
-
 		// Parse response
+		list($curl_response_headers, $curl_response) = preg_split("/\R\R/", $curl_response, 2);
 		if( $this->count )
 			$parsed_result = $curl_response;
 		else
 			$parsed_result = $this->parse_response($curl_response);
+
+		// Save response to class variable for use in debugging
+		$this->last_emma_response = $curl_response;
+		$this->last_emma_response_headers = $curl_response_headers;
+		$this->last_emma_response_info = $curl_info;
 
 		// Return parsed response
 		return $parsed_result;
@@ -739,7 +753,8 @@ class Emma {
 	function import_single_member($email, $fields, $group_ids = NULL, $signup_form_id = NULL ){
 
 		$send_data['email'] = $email;
-		$send_data['fields'] = $fields;
+		if( !empty($fields) )
+			$send_data['fields'] = $fields;
 
 		if(!empty($group_ids))
 			$send_data['group_ids'] = $group_ids;
