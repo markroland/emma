@@ -6,6 +6,7 @@
  * @package emma
  * @author Mark Roland <mark [at] mark roland dot com>
  * @copyright Mark Roland, 2012
+ * @license http://www.opensource.org/licenses/mit-license.php The MIT License
  * @version 1.0.1
  *
  * Documentation: http://api.myemma.com/
