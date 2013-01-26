@@ -6,8 +6,7 @@
  * @package emma
  * @author Mark Roland <mark [at] mark roland dot com>
  * @copyright Mark Roland, 2012
- * @license http://www.opensource.org/licenses/mit-license.php The MIT License
- * @version 1.0.1
+ * @version 1.1
  *
  * Documentation: http://api.myemma.com/
  *
@@ -244,7 +243,13 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function get_field($field_id, $deleted = ''){
-		$data = $this->make_request('fields/'.$field_id, 'GET',$send_data);
+
+		if($deleted)
+			$send_data['deleted'] = 1;
+		else
+			$send_data['deleted'] = 0;
+
+		$data = $this->make_request('fields/'.$field_id, 'GET', $send_data);
 		return $data;
 	}
 
@@ -753,8 +758,7 @@ class Emma {
 	function import_single_member($email, $fields, $group_ids = NULL, $signup_form_id = NULL ){
 
 		$send_data['email'] = $email;
-		if( !empty($fields) )
-			$send_data['fields'] = $fields;
+		$send_data['fields'] = $fields;
 
 		if(!empty($group_ids))
 			$send_data['group_ids'] = $group_ids;
