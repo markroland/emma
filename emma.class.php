@@ -758,10 +758,13 @@ class Emma {
 	function import_single_member($email, $fields, $group_ids = NULL, $signup_form_id = NULL ){
 
 		$send_data['email'] = $email;
-		$send_data['fields'] = $fields;
+
+		if(!empty($fields))
+			$send_data['fields'] = $fields;
 
 		if(!empty($group_ids))
 			$send_data['group_ids'] = $group_ids;
+
 		if(!empty($signup_form_id))
 			$send_data['signup_form_id'] = $signup_form_id;
 
