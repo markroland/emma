@@ -28,7 +28,3 @@ In order to understand how to use this script, please make sure you
 have a good understanding of the Emma API:
 
 http://api.myemma.com/
-
-This PHP class has been formatted for documentation with PHP-doc. The class
-is pretty self explanatory, however you may open documentation/index.html
-for a better overview. 
