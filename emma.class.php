@@ -6,12 +6,14 @@
  * @package emma
  * @author Mark Roland <mark [at] mark roland dot com>
  * @copyright Mark Roland, 2012
- * @version 1.1
+ * @version 1.2
  *
  * Documentation: http://api.myemma.com/
  *
- * Created on 2/1/2012
- * Modified on 1/16/2013
+ * 2/1/2012 - Created
+ * 1/16/2013 - Modified
+ * 2/13/2013 - Added: validate_mailing(), declare_mailing_winner(), delete_webhooks()
+ *	 set_member_optout().
  *
  **/
 class Emma {
@@ -74,7 +76,7 @@ class Emma {
 	public $end = -1;
 
 	/**
-	 * Start
+	 * Set the number of records to return
 	 * @var integer
 	 */
 	public $count = FALSE;
@@ -116,7 +118,9 @@ class Emma {
 	/**
 	 * Make a request to the Emma API
 	 *
-	 * @param string $method The API method to be called
+	 * @param string $api_method The API method to be called
+	 * @param string $http_method The HTTP method to be used (GET, POST, PUT, DELETE, etc.)
+	 * @param array $data Any data to be sent to the API
 	 * @return string|array API request results
 	 **/
 	function make_request($api_method, $http_method = NULL, $data = NULL){
@@ -208,7 +212,7 @@ class Emma {
 	/**
 	 * Parse Response
 	 *
-	 * @param string|array A json-formatted API response
+	 * @param string|array $response A json-formatted API response
 	 * @return string|array API request results
 	 **/
 	function parse_response($response){
@@ -312,6 +316,7 @@ class Emma {
 	 * Updates an existing field
 	 *
 	 * @param integer $field_id A unique Field ID
+	 * @param array $send_data Field data to be updated
 	 * @return string|array API request results
 	 **/
 	function update_field($field_id, $send_data){
@@ -344,8 +349,7 @@ class Emma {
 	/**
 	 * Add Group
 	 *
-	 * @param integer $group_id required, identifier that you would like to use to reference the new group
-	 * @param string $group_name required, the name of the new group, can not exceed 255 characcters
+	 * @param array $groups An array of group information
 	 * @return string|array API request results
 	 *
 	 **/
@@ -371,6 +375,7 @@ class Emma {
 	 * Update information for a single member group
 	 *
 	 * @param integer $group_id required, identifier that you would like to use to reference the group
+	 * @param string $group_name required, the name of the new group, can not exceed 255 characcters
 	 * @return string|array API request results
 	 *
 	 **/
@@ -396,6 +401,7 @@ class Emma {
 	 * Get the members in a single active member group.
 	 *
 	 * @param integer $group_id required, identifier that you would like to use to reference the group
+	 * @param boolean $show_deleted Set to 1 so see deleted group members, 0 to ignore deleted members
 	 * @return string|array API request results
 	 *
 	 **/
@@ -660,6 +666,39 @@ class Emma {
 		return $data;
 	}
 
+	/**
+	 * Validate that a mailing has valid personalization-tag syntax.
+	 *
+	 * @param string $html_body The html contents of the mailing
+	 * @param string $plaintext The plaintext contents of the mailing.
+	 * Unlike in create_mailing, this param is not required.
+	 * @param string $subject The subject of the mailing
+	 * @return boolean true
+	 *
+	 **/
+	function validate_mailing($html_body, $plaintext, $subject){
+		$send_data = array(
+			'html_body' => $html_body,
+			'plaintext' => $plaintext,
+			'subject' => $subject
+		);
+		$data = $this->make_request('mailings/validate', 'POST', $send_data);
+		return $data;
+	}
+
+	/**
+	 * Declare the winner of a split test manually
+	 *
+	 * @param integer $mailing_id A unique Mailing ID
+	 * @param integer $winner_id A mailing split-test ID
+	 * @return boolean true on success
+	 *
+	 **/
+	function declare_mailing_winner($mailing_id, $winner_id){
+		$data = $this->make_request('mailings/'.$mailing_id.'/winner/'.$winner_id, 'POST');
+		return $data;
+	}
+
 	/* *** END `MAILINGS` METHODS *** */
 
 	/* *** BEGIN `MEMBERS` METHODS *** */
@@ -670,17 +709,18 @@ class Emma {
 	 * @param boolean $deleted Set to true to include deleted members in results
 	 * @return string|array API request results
 	 **/
-	function list_members($show_deleted = NULL, $count = false){
+	function list_members($show_deleted = NULL, $start = NULL, $end = NULL){
 
 		if($show_deleted)
 			$send_data['deleted'] = 1;
 		else
 			$send_data['deleted'] = 0;
 
-		if( $count)
-			$this->count = true;
-		else
-			$this->count = false;
+		if($start)
+			$send_data['start'] = $start;
+
+		if($end > $start)
+			$send_data['end'] = $end;
 
 		$data = $this->make_request('members','GET', $send_data);
 		return $data;
@@ -716,6 +756,17 @@ class Emma {
 	 **/
 	function get_member_optout_detail($member_id){
 		$data = $this->make_request('members/'.$member_id.'/optout','GET');
+		return $data;
+	}
+
+	/**
+	 * Update a member’s status to optout, keyed on email address instead of an ID
+	 *
+	 * @param string $email Email address of member
+	 * @return boolean True if member status change was successful or member was already opted out.
+	 **/
+	function set_member_optout($email){
+		$data = $this->make_request('members/email/optout/'.$email,'PUT');
 		return $data;
 	}
 
@@ -937,7 +988,6 @@ class Emma {
 	/**
 	 * Get information about all imports for this account.
 	 *
-	 * @param string $import_id A unique Import ID
 	 * @return string|array API request results
 	 **/
 	function get_all_import_stats(){
@@ -948,7 +998,6 @@ class Emma {
 	/**
 	 * Update an import record to be marked as ‘deleted’.
 	 *
-	 * @param string $import_id A unique Import ID
 	 * @return string|array API request results
 	 **/
 	function mark_import_as_deleted(){
@@ -973,8 +1022,8 @@ class Emma {
 	/**
 	 * Update the status for a group of members, based on their current status
 	 *
-	 * @param string $status_from	 This is ‘a’ctive, ‘o’ptout, and/or ‘e’error.
-	 * @param string $status_to	 This is ‘a’ctive, ‘o’ptout, and/or ‘e’error.
+	 * @param string $status_from This is ‘a’ctive, ‘o’ptout, and/or ‘e’error.
+	 * @param string $status_to This is ‘a’ctive, ‘o’ptout, and/or ‘e’error.
 	 * @param integer $group_id A unique Group ID
 	 * @return string|array API request results
 	 *
@@ -1088,7 +1137,7 @@ class Emma {
 	 * Get the list of clicks for this mailing.
 	 *
 	 * @param integer $mailing_id A unique Mailing ID
-	 * @param integer $member_id	Limits results to a single member.
+	 * @param integer $member_id Limits results to a single member.
 	 * @param integer $link_id Limits results to a single link
 	 * @return string|array API request results
 	 *
@@ -1248,7 +1297,7 @@ class Emma {
 	}
 
 	/**
-	 * Get the details for a saved search
+	 * Create a saved search
 	 *
 	 * @param array $criteria Search criteria
 	 * @param string $name A name for the search
@@ -1263,7 +1312,7 @@ class Emma {
 	}
 
 	/**
-	 * Get the details for a saved search
+	 * Update a saved search
 	 *
 	 * @param string $search_id A unique Search ID
 	 * @param array $criteria Search criteria
@@ -1309,6 +1358,7 @@ class Emma {
 	/**
 	 * Get a basic listing of all triggers in an account.
 	 *
+	 * @param boolean $deleted Set to TRUE or 1 to include deleted fields in results
 	 * @return string|array API request results
 	 *
 	 **/
@@ -1444,7 +1494,7 @@ class Emma {
 	}
 
 	/**
-	 * Create an new webhook.
+	 * Create a new webhook.
 	 *
 	 * @param string $event The name of an event to register this webhook for
 	 * @param string $url The URL to call when the event happens
@@ -1487,11 +1537,24 @@ class Emma {
 	/**
 	 * Deletes an existing webhook.
 	 *
+	 * @param string $webhook_id A unique Webhook ID
 	 * @return string|array API request results
 	 *
 	 **/
 	function delete_webhook($webhook_id){
 		$data = $this->make_request('webhooks/'.$webhook_id, 'DELETE');
+		return $data;
+	}
+
+	/**
+	 * Delete all webhooks registered for an account
+	 *
+	 * @param string $webhook_id A unique Webhook ID
+	 * @return string|array API request results
+	 *
+	 **/
+	function delete_webhooks($webhook_id){
+		$data = $this->make_request('webhooks', 'DELETE');
 		return $data;
 	}
 
