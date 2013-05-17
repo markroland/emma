@@ -6,14 +6,12 @@
  * @package emma
  * @author Mark Roland <mark [at] mark roland dot com>
  * @copyright Mark Roland, 2012
- * @version 1.2
+ * @version 1.3
  *
  * Documentation: http://api.myemma.com/
  *
  * 2/1/2012 - Created
- * 1/16/2013 - Modified
- * 2/13/2013 - Added: validate_mailing(), declare_mailing_winner(), delete_webhooks()
- *	 set_member_optout().
+ * 5/17/2013 - Last Updated
  *
  **/
 class Emma {
@@ -948,7 +946,9 @@ class Emma {
 	 * @return string|array API request results
 	 **/
 	function remove_members_from_groups($member_ids, $group_ids){
-		$data = $this->make_request('members/groups/remove','PUT');
+		$send_data['member_ids'] = $member_ids;
+		$send_data['group_ids'] = $group_ids;
+		$data = $this->make_request('members/groups/remove','PUT',$send_data);
 		return $data;
 	}
 
