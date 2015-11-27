@@ -10,6 +10,15 @@ Emma is a PHP class for interaction with the [Emma API](http://api.myemma.com).
 This PHP class may be distributed and used for free. The author makes
 no guarantee for this software and offers no support.
 
+Build status: [![Build Status](https://travis-ci.org/markroland/Emma.svg)](https://travis-ci.org/markroland/Emma)
+
+Installation
+------------
+
+```sh
+    composer require markroland/Emma:~2
+```
+
 Usage
 -----
 
