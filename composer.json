@@ -1,0 +1,23 @@
+{
+    "name": "markroland/emma",
+    "description": "A PHP Wrapper for the Emma API",
+    "keywords": [
+        "Emma"
+    ],
+    "homepage": "https://github.com/markroland/emma",
+    "authors": [
+        {
+            "name": "Mark Roland",
+            "homepage": "http://markroland.com/"
+        }
+    ],
+    "license": "MIT",
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "markroland\\Emma": "src/"
+        }
+    }
+}

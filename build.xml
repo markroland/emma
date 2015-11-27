@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Emma" default="main" description="Emma API wrapper">
+
+    <property name="message" value="Phing Running..."/>
+    <property name="php_bin_path" value="/usr/bin/" />
+
+    <!-- Default target - PHP Lint -->
+    <target name="main">
+        <phplint>
+            <fileset dir="src">
+                <include name="*.php"/>
+            </fileset>
+        </phplint>
+    </target>
+
+    <!-- PHP Code Sniffer -->
+    <target name="phpcs" description="PHP Code Sniffer">
+        <phpcodesniffer standard="PEAR" format="summary">
+            <fileset dir="src">
+                <include name="*.php" />
+            </fileset>
+        </phpcodesniffer>
+    </target>
+
+    <!-- PHPUnit. Includes Code Coverage -->
+    <!-- Not working properly -->
+    <target name="phpunit" description="PHP Unit Testing">
+        <phpunit pharlocation="/usr/local/bin/phpunit" codecoverage="true" haltonfailure="true" haltonerror="true" configuration="phpunit.xml.dist">
+            <formatter type="plain" usefile="false"/>
+            <batchtest>
+                <fileset dir="tests">
+                    <include name="*Test.php"/>
+                </fileset>
+            </batchtest>
+        </phpunit>
+    </target>
+
+    <!-- phpDocumentor -->
+    <target name="phpdoc" description="PHP Documentor">
+        <mkdir dir="docs" />
+        <phpdoc2 title="API Documentation" destdir="docs">
+            <fileset dir="src">
+                <include name="*.php" />
+            </fileset>
+        </phpdoc2>
+    </target>
+
+</project>

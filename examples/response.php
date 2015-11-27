@@ -1,10 +1,10 @@
 <?php
 
 // Include Emma class
-require('emma.class.php');
+require __DIR__ . '/../src/Emma.php';
 
 // Create new Emma class object
-$E = new Emma('1234567', 'Drivorj7QueckLeuk', 'WoghtepheecijnibV');
+$E = new markroland\Emma('1234567', 'Drivorj7QueckLeuk', 'WoghtepheecijnibV');
 
 // Control Debugging output
 $E->debug = true;

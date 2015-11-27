@@ -1,10 +1,10 @@
 Emma
 ====
 
-Emma is a PHP class for interaction with the Emma API.
+Emma is a PHP class for interaction with the [Emma API](http://api.myemma.com).
 
-    Copyright (c) 2012 Mark Roland.
-    Written by Mark Roland, mark [at] mark roland dot com
+    Copyright (c) 2012-2015 Mark Roland.
+    Written by Mark Roland
     Released under the MIT license.
 
 This PHP class may be distributed and used for free. The author makes
@@ -28,3 +28,47 @@ In order to understand how to use this script, please make sure you
 have a good understanding of the Emma API:
 
 http://api.myemma.com/
+
+Build
+=====
+
+## Build using Phing
+
+```sh
+    phing
+```
+
+```sh
+    phing phpdoc
+```
+
+```sh
+    phing phpcs
+```
+
+## PHPUnit 
+
+```sh
+    phpunit --bootstrap tests/bootstrap.php tests
+```
+
+## Code Coverage
+
+```sh
+    phpunit --coverage-html ./report ./tests
+```
+
+## PHP Documentation
+
+PHP Documentation is compiled using [phpDocumentor](http://www.phpdoc.org), which is assumed
+to be installed globally on the server. It uses phpdoc.dist.xml for runtime configuration.
+
+```sh
+    phpdoc
+```
+
+## Code Sniff
+
+```sh
+    phpcs -n --report-width=100 ./src/Emma.php
+```
