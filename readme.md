@@ -24,11 +24,15 @@ Usage
 
 To get started, initialize the Emma class as follows:
 
+```php
     $emma = new Emma(<account_id>, <public_key>, <private_key>);
+```
 
 For example,
 
+```php
     $emma = new Emma('1234','Drivorj7QueckLeuk','WoghtepheecijnibV');
+```
 
 The "tests" folder in this package contains some test scripts that can
 be run to see how emma.class.php may be used.
