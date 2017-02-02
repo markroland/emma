@@ -16,7 +16,7 @@ Installation
 ------------
 
 ```sh
-    composer require markroland/emma:~2
+    composer require markroland/emma ~2.0
 ```
 
 Usage
