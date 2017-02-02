@@ -25,7 +25,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "MarkRoland\\Emma\\Tests": "tests/"
+            "MarkRoland\\Emma\\Tests\\": "tests/"
         }
     }
 }
