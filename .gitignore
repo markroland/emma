@@ -1,4 +1,7 @@
+composer.lock
 log.txt
 
-docs
-report
+.idea/
+docs/
+report/
+vendor/
