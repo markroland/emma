@@ -579,7 +579,7 @@ class Client
      **/
     function get_mailing_groups($mailing_id)
     {
-        $data = $this->make_request('mailings/'.$mailing_id.'/groups'.$member_id, 'GET');
+        $data = $this->make_request('mailings/'.$mailing_id.'/groups'.$mailing_id, 'GET');
         return $data;
     }
 
@@ -1305,7 +1305,7 @@ class Client
      **/
     function get_customer_share($share_id)
     {
-        $data = $this->make_request('response/'.$mailing_id.'/customer_share', 'GET');
+        $data = $this->make_request('response/'.$share_id.'/customer_share', 'GET');
         return $data;
     }
 
