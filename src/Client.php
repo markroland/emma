@@ -1416,6 +1416,8 @@ class Client
     /* *** BEGIN `TRIGGERS` METHODS *** */
 
     /**
+     * @deprecated
+     *
      * Get a basic listing of all triggers in an account.
      *
      * @param  boolean $deleted Set to TRUE or 1 to include deleted fields in results
@@ -1428,6 +1430,8 @@ class Client
     }
 
     /**
+     * @deprecated
+     *
      * Create a new trigger.
      *
      * @param  string  $name              A descriptive name for the trigger.
@@ -1475,6 +1479,8 @@ class Client
     }
 
     /**
+     * @deprecated
+     *
      * Look up a trigger by trigger id.
      *
      * @param  string $trigger_id A unique Trigger ID
@@ -1487,6 +1493,8 @@ class Client
     }
 
     /**
+     * @deprecated
+     *
      * Update or edit a trigger.
      *
      * @param  string $trigger_id A unique Trigger ID
@@ -1499,6 +1507,8 @@ class Client
     }
 
     /**
+     * @deprecated
+     *
      * Delete a trigger.
      *
      * @param  string $trigger_id A unique Trigger ID
@@ -1511,6 +1521,8 @@ class Client
     }
 
     /**
+     * @deprecated
+     *
      * Get mailings sent by a trigger.
      *
      * @param  string $trigger_id A unique Trigger ID
