@@ -1,20 +1,44 @@
 <?php
 
-class EmmaTest extends PHPUnit_Framework_TestCase {
+namespace MarkRoland\Emma\Tests;
 
-    protected $EmmaClient;
+use MarkRoland\Emma\Client;
+use PHPUnit_Framework_TestCase;
 
-    public function setup() {
+class EmmaTest extends PHPUnit_Framework_TestCase
+{
+    /**
+     * @var Client
+     */
+    protected $emmaClient;
+    /**
+     * @var int
+     */
+    protected $accountId = 123456;
+    /**
+     * @var string
+     */
+    protected $publicKey = 'XXXXXXXXXXXXXXXXXXXX';
+    /**
+     * @var string
+     */
+    protected $privateKey = 'XXXXXXXXXXXXXXXXXXXX';
 
-        $this->EmmaClient = new markroland\Emma(
-            EMMA_ACCOUNT_ID,
-            EMMA_PUBLIC_KEY,
-            EMMA_PRIVATE_KEY
-        );
+    /**
+     * Setup Emma Client
+     */
+    public function setup()
+    {
+        $this->emmaClient = new Client($this->accountId, $this->publicKey, $this->privateKey);
     }
 
-    public function test_get_field_list() {
-        $response = $this->EmmaClient->get_field_list(1);
+    /**
+     * @test
+     */
+    public function test_get_field_list()
+    {
+        $response = $this->emmaClient->get_field_list(1);
+
         $this->assertNull($response);
     }
 }

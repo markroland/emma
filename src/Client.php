@@ -1,6 +1,8 @@
 <?php
 
-namespace markroland;
+namespace MarkRoland\Emma;
+
+use Exception;
 
 /**
  * Emma Class
@@ -12,9 +14,8 @@ namespace markroland;
  *
  * Documentation: http://api.myemma.com/
  **/
-class Emma
+class Client
 {
-
     /**
      * Emma API Dommain
      * @var string
@@ -90,11 +91,11 @@ class Emma
      * @param  string|array $account_id  The Emma Account ID on which to perform actions, or an array of params
      * @param  string       $public_key  The Emma public key for the account
      * @param  string       $private_key The Emma private key for the account
-     * @return boolean false if $account_id is not provided
-     **/
+     *
+     * @throws Exception
+     */
     function __construct($account_id, $public_key=null, $private_key=null)
     {
-
         if (is_array($account_id) ) {
             $params = $account_id;
             $account_id = isset($params['account_id']) ? $params['account_id'] : null;
@@ -103,14 +104,13 @@ class Emma
         }
 
         if (empty($account_id) || empty($public_key) || empty($private_key) ) {
-            throw new \Exception('Emma Error: no account id, public key, or private key sent to constructor.');
+            throw new Exception('Emma Error: no account id, public key, or private key sent to constructor.');
         }
 
         // Save account ID to class object variable
         $this->emma_account_id = $account_id;
         $this->emma_public_key = $public_key;
         $this->emma_private_key = $private_key;
-
     }
 
     /**
@@ -579,7 +579,7 @@ class Emma
      **/
     function get_mailing_groups($mailing_id)
     {
-        $data = $this->make_request('mailings/'.$mailing_id.'/groups'.$member_id, 'GET');
+        $data = $this->make_request('mailings/'.$mailing_id.'/groups'.$mailing_id, 'GET');
         return $data;
     }
 
@@ -1305,7 +1305,7 @@ class Emma
      **/
     function get_customer_share($share_id)
     {
-        $data = $this->make_request('response/'.$mailing_id.'/customer_share', 'GET');
+        $data = $this->make_request('response/'.$share_id.'/customer_share', 'GET');
         return $data;
     }
 
@@ -1416,6 +1416,8 @@ class Emma
     /* *** BEGIN `TRIGGERS` METHODS *** */
 
     /**
+     * @deprecated
+     *
      * Get a basic listing of all triggers in an account.
      *
      * @param  boolean $deleted Set to TRUE or 1 to include deleted fields in results
@@ -1428,6 +1430,8 @@ class Emma
     }
 
     /**
+     * @deprecated
+     *
      * Create a new trigger.
      *
      * @param  string  $name              A descriptive name for the trigger.
@@ -1475,6 +1479,8 @@ class Emma
     }
 
     /**
+     * @deprecated
+     *
      * Look up a trigger by trigger id.
      *
      * @param  string $trigger_id A unique Trigger ID
@@ -1487,6 +1493,8 @@ class Emma
     }
 
     /**
+     * @deprecated
+     *
      * Update or edit a trigger.
      *
      * @param  string $trigger_id A unique Trigger ID
@@ -1499,6 +1507,8 @@ class Emma
     }
 
     /**
+     * @deprecated
+     *
      * Delete a trigger.
      *
      * @param  string $trigger_id A unique Trigger ID
@@ -1511,6 +1521,8 @@ class Emma
     }
 
     /**
+     * @deprecated
+     *
      * Get mailings sent by a trigger.
      *
      * @param  string $trigger_id A unique Trigger ID
@@ -1630,4 +1642,3 @@ class Emma
     /* *** END `WEBHOOKS` METHODS *** */
 
 } // END class
-?>

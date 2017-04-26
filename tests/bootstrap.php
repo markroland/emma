@@ -1,7 +1,5 @@
 <?php
 
-define('EMMA_ACCOUNT_ID', '123456');
-define('EMMA_PUBLIC_KEY', 'XXXXXXXXXXXXXXXXXXXX');
-define('EMMA_PRIVATE_KEY', 'XXXXXXXXXXXXXXXXXXXX');
+require dirname(__DIR__).'/vendor/autoload.php';
 
-require __DIR__ . '/../src/Emma.php';
+date_default_timezone_set('UTC');
